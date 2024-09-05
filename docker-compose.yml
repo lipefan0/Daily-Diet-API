@@ -1,0 +1,15 @@
+services:
+  db:
+    image: mysql:latest
+    restart: always
+    environment:
+      MYSQL_USER: "admin"
+      MYSQL_PASSWORD: "admin123"
+      MYSQL_DATABASE: "daily-diet"
+      MYSQL_ROOT_PASSWORD: "daily123"
+    ports:
+      - "3306:3306" # Mapear a porta correta para o MySQL
+    expose:
+      - "5000" # Remover, já que MySQL usa 3306
+    volumes:
+      - C:/Users/Felipe/Desktop/docker-container/mysql-diet-api:/var/lib/mysql
