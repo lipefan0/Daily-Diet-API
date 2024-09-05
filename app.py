@@ -82,8 +82,58 @@ def create_meal():
         meal = Meal(food=food, description=description, date=date_format, is_it_a_diet=is_it_a_diet, id_user=current_user.id)
         db.session.add(meal)
         db.session.commit()
-        return jsonify({'message': 'Meal created successfully'})
+        return jsonify({'message': f'Meal created successfully on user{current_user.id}'}), 20
     return jsonify({'message': 'Invalid data'}), 400
+
+@app.route('/meals', methods=['GET'])
+@login_required
+def read_meals():
+    meals = Meal.query.filter_by(id_user=current_user.id).all()
+    list_meals = [{'id':meal.id,'food': meal.food, 'description': meal.description, 'date': meal.date, 'is_it_a_diet': meal.is_it_a_diet} for meal in meals]
+    return jsonify(list_meals)
+
+@app.route('/meals/<int:food_id>', methods=['GET'])
+@login_required
+def read_meal(food_id):
+    meal = Meal.query.filter_by(id=food_id, id_user=current_user.id).first()
+
+    if meal:
+        return jsonify({'id':meal.id,'food': meal.food, 'description': meal.description, 'date': meal.date, 'is_it_a_diet': meal.is_it_a_diet})
+    return jsonify({'message': 'Meal not found'}), 404
+    
+
+@app.route('/meals/<int:food_id>', methods=['PUT'])
+@login_required
+def update_meal(food_id):
+    data = request.json
+    food = data.get('food')
+    description = data.get('description')
+    date = data.get('date')
+    is_it_a_diet = data.get('is_it_a_diet')
+
+    meal = Meal.query.filter_by(id=food_id, id_user=current_user.id).first()
+
+    if meal:
+        meal.food = food
+        meal.description = description
+        meal.date = date
+        meal.is_it_a_diet = is_it_a_diet
+        db.session.commit()
+        return jsonify({'message': f'Meal {food_id} updated successfully'}), 200
+    return jsonify({'message': 'Meal not found'}), 404
+
+@app.route('/meals/<int:food_id>', methods=['DELETE'])
+@login_required
+def delete_meal(food_id):
+    meal = Meal.query.filter_by(id=food_id, id_user=current_user.id).first()
+
+    if meal:
+        db.session.delete(meal)
+        db.session.commit()
+        return jsonify({'message': f'Meal {food_id} deleted successfully'}), 200
+    return jsonify({'message': 'Meal not found'}), 404
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)
